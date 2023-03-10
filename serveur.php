@@ -20,12 +20,12 @@ case "GET" :
     /// Traitement
     $bearer_token = '';
     $bearer_token = get_bearer_token();
-   $requete = new Requete();
-   $matchingData = $requete->select($id);
+    $requete = new Requete();
+    $matchingData = $requete->select($id);
     if (!$matchingData) {
       deliver_response(404, "Aucune donnée ne correspond à l'identifiant spécifié.", NULL);
     } else {
-      /// Envoi de la réponse au Client
+    /// Envoi de la réponse au Client
       deliver_response(200, "Votre message", $matchingData);
     }
   }
