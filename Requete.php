@@ -45,7 +45,7 @@ class Requete {
         }
 
     public function insert($data){
-        $query = "INSERT INTO chuckn_facts(phrase) VALUES (:phrase)";
+        $query = "INSERT INTO articles(phrase) VALUES (:phrase)";
         $stmt = $this->db->prepare($query);
         $stmt->execute(array(
             ':phrase' => $data['phrase']
