@@ -45,10 +45,14 @@ class Requete {
         }
 
     public function insert($data){
-        $query = "INSERT INTO articles(phrase) VALUES (:phrase)";
+        $query = "INSERT INTO articles(date_publi, auteur, contenu, DerniereModification) 
+        VALUES (:date_publi, :auteur, :contenu, :DerniereModification)";
         $stmt = $this->db->prepare($query);
         $stmt->execute(array(
-            ':phrase' => $data['phrase']
+            ':date_publi' => $data['date_publi'],
+            ':auteur' => $data['auteur'],
+            ':contenu' => $data['contenu'],
+            ':DerniereModification' => $data['DerniereModification']
         ));
         if(!$stmt){
             echo "Erreur d'execution : " . print_r($stmt->errorInfo(), true);
