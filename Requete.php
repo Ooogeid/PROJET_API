@@ -13,7 +13,7 @@ class Requete {
     public function select($id_articles) {
         $query = "SELECT * FROM articles";
         if ($id_articles != "") {
-            $query .= " WHERE id = $id_articles";
+            $query .= " WHERE id_articles = $id_articles";
         }
 
         $stmt = $this->db->prepare($query);
@@ -22,15 +22,6 @@ class Requete {
         $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return $resultat;
     }
-
-    public function selectByAuthor($author) {
-        $query = "SELECT * FROM articles WHERE auteur = :author";
-        $stmt = $this->pdo->prepare($query);
-        $stmt->bindParam(':author', $author);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-      }
-        
     
     public function update($id_articles, $data) {
         $query = "UPDATE articles SET contenu = :contenu WHERE id_articles = :id_articles";
@@ -42,16 +33,26 @@ class Requete {
         return $result;
     }
 
-        public function delete($id_articles) {
-            $query = "DELETE FROM articles";
-            if ($id_articles != "") {
-                $query .= " WHERE  = :id_articles";
-            }
-            $stmt = $this->db->prepare($query);
-            $stmt->execute(array(
-                ':id_articles' => $id_articles
-            ));
+    public function updateDateModif($id_articles, $data){
+        $query = "UPDATE articles SET DerniereModification = :DerniereModification WHERE id_articles = :id_articles";
+        $stmt = $this->db->prepare($query);
+        $result = $stmt->execute(array(
+            'id_articles' => $id_articles,
+            'DerniereModification' => $data['DerniereModification']
+        ));
+        return $result;
+    }
+
+    public function delete($id_articles) {
+        $query = "DELETE FROM articles";
+        if ($id_articles != "") {
+            $query .= " WHERE  = :id_articles";
         }
+        $stmt = $this->db->prepare($query);
+        $stmt->execute(array(
+            ':id_articles' => $id_articles
+        ));
+    }
 
     public function insert($data){
         $query = "INSERT INTO articles(date_publi, auteur, contenu, DerniereModification) 

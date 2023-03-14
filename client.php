@@ -11,14 +11,31 @@
 		<h1>API pour la gestion des articles</h1>
 	</header>
 	<main>
-		<section id="articles">
-			<h2>Liste des articles</h2>
-			<form id="get-form">
-				<label for="auteur">Auteur :</label>
-				<input type="text" id="auteur" name="auteur">
-				<button type="submit">Rechercher</button>
-			</form>
-		</section>
+			<section id="articles">
+				<h2>Liste des articles</h2>
+				<form action="serveur.php" id="get-form" method="POST">
+					<label for="id_articles">ID :</label>
+					<input type="text" id="id_articles" name="id_articles">
+					<button type="submit">Rechercher</button>
+				</form>
+				<div id="get-result">
+					<table>
+						<thead>
+						<tr>
+							<th>ID</th>
+							<th>Date de création</th>
+							<th>Auteur</th>
+							<th>Contenu</th>
+							<th>Dernière modification</th>
+						</tr>
+						</thead>
+						<tbody>
+						</tbody>
+					</table>
+				</div>
+				
+			</section>
+
 		<section id="nouvel-article">
 			<h2>Ajouter un nouvel article</h2>
 			<form>
@@ -29,6 +46,7 @@
 				<button type="submit">Ajouter</button>
 			</form>
 		</section>
+
 		<section id="modifier-article">
 			<h2>Modifier un article</h2>
 			<form>
@@ -54,25 +72,25 @@
 		// Traitement du formulaire de la méthode GET
 		$('#get-form').submit(function(event) {
 		event.preventDefault();
-		var author = $('input[name="auteur"]').val();
+		var id = $('input[name="id_articles"]').val();
 		$.ajax({
-			url: 'http://localhost/R4.01/PROJET_API/src/serveur.php?author=' + author,
+			url: 'http://localhost/R4.01/PROJET_API/src/serveur.php?id=' + id,
 			method: 'GET',
 			success: function(result) {
-			$('#articles tbody').empty();
-				result.forEach(function(article) {
-					var row = $('<tr>');
-					row.append($('<td>').text(article.id));
-					row.append($('<td>').text(article.date_publication));
-					row.append($('<td>').text(article.auteur));
-					row.append($('<td>').text(article.contenu));
-					row.append($('<td>').text(article.date_modification));
-					$('#articles tbody').append(row);
-				});
+				// Créer une nouvelle ligne pour le tableau
+			var newRow = $('<tr>');
+			// Ajouter chaque valeur de l'article dans une cellule du tableau
+			newRow.append('<td>' + result.id_articles + '</td>');
+			newRow.append('<td>' + result.DateCreation + '</td>');
+			newRow.append('<td>' + result.auteur + '</td>');
+			newRow.append('<td>' + result.contenu + '</td>');
+			newRow.append('<td>' + result.DerniereModification + '</td>');
+
+			// Ajouter la nouvelle ligne au corps du tableau
+			$('table tbody').append(newRow);
 			},
 			error: function(xhr, textStatus, errorThrown) {
-			$('#articles tbody').empty();
-			$('#articles tbody').append($('<tr>').append($('<td>').attr('colspan', 5).text('Erreur ' + xhr.status + ' : ' + errorThrown)));
+				$('#get-result').html('<p>Erreur ' + xhr.status + ' : ' + errorThrown + '</p>');
 			}
 		});
 		});
