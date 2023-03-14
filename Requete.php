@@ -22,6 +22,15 @@ class Requete {
         $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return $resultat;
     }
+
+    public function selectByAuthor($author) {
+        $query = "SELECT * FROM articles WHERE auteur = :author";
+        $stmt = $this->pdo->prepare($query);
+        $stmt->bindParam(':author', $author);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+      }
+        
     
     public function update($id_articles, $data) {
         $query = "UPDATE articles SET contenu = :contenu WHERE id_articles = :id_articles";

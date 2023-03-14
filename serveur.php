@@ -12,25 +12,21 @@ $http_method = $_SERVER['REQUEST_METHOD'];
 switch ($http_method){
 
 /// Cas de la méthode GET
-case "GET" :
-  $id = "";
-  /// Récupération des critères de recherche envoyés par le Client
-  if (!empty($_GET['id'])){
-    $id = $_GET['id'];
-    /// Traitement
+case "GET":
+  $author = "";
+  if (!empty($_GET['author'])) {
+    $author = $_GET['author'];
     $bearer_token = '';
     $bearer_token = get_bearer_token();
     $requete = new Requete();
-    $matchingData = $requete->select($id);
+    $matchingData = $requete->selectByAuthor($author);
     if (!$matchingData) {
-      deliver_response(404, "Aucune donnée ne correspond à l'identifiant spécifié.", NULL);
+      deliver_response(404, "Aucune donnée ne correspond à l'auteur spécifié.", NULL);
     } else {
-    /// Envoi de la réponse au Client
-      deliver_response(200, "Votre message", $matchingData);
+      deliver_response(200, "OK", $matchingData);
     }
-  }
-  else{
-    deliver_response(404, "L'identifiant de la ressource doit être spécifié pour la méthode GET", NULL);
+  } else {
+    deliver_response(404, "Le nom de l'auteur doit être spécifié pour la méthode GET", NULL);
   }
   break;
 
