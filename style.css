@@ -83,3 +83,23 @@ input[type="email"]:focus,
 input[type="password"]:focus{
   background: rgba(255,255,255,0.1);
   box-shadow: 4px 4px 60px 8px rgba}
+
+/* Style pour le tableau d'articles */
+#get-result table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+#get-result th, #get-result td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+#get-result th {
+  background-color: #f2f2f2;
+}
+
+#get-result tr:nth-child(even) {
+  background-color: #f2f2f2;
+}

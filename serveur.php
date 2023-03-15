@@ -35,17 +35,17 @@ case "GET" :
 
 /// Cas de la méthode POST
 case "POST" :
-    /// Récupération des données envoyées par le Client
-    $postedData = file_get_contents('php://input');
-    /// Traitement
-    $requete = new Requete();
-    $data = json_decode($postedData, true);
-    $requete->insert($data);
-    /// Envoi de la réponse au Client
-    deliver_response(201, "Votre phrase : ", $data);
-    $id = $_GET['id'];
-    $requete->select($id);  
-    break;
+  /// Récupération des données envoyées par le Client
+  $postedData = file_get_contents('php://input');
+  /// Traitement
+  $data = json_decode($postedData, true);
+  $data['date_publi'] = date('Y-m-d H:i:s');
+  $requete = new Requete();
+  $requete->insert($data);
+  /// Envoi de la réponse au Client
+  deliver_response(200, "Votre article a été ajouté avec succès.", $data);
+  break;
+
 
 /// Cas de la méthode PUT
 case "PUT" :

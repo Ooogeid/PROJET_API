@@ -46,7 +46,7 @@ class Requete {
     public function delete($id_articles) {
         $query = "DELETE FROM articles";
         if ($id_articles != "") {
-            $query .= " WHERE  = :id_articles";
+            $query .= " WHERE id_articles = :id_articles";
         }
         $stmt = $this->db->prepare($query);
         $stmt->execute(array(
@@ -55,19 +55,36 @@ class Requete {
     }
 
     public function insert($data){
-        $query = "INSERT INTO articles(date_publi, auteur, contenu, DerniereModification) 
-        VALUES (:date_publi, :auteur, :contenu, :DerniereModification)";
+        $query = "INSERT INTO articles(date_publi, auteur, contenu) 
+        VALUES (:date_publi, :auteur, :contenu)";
         $stmt = $this->db->prepare($query);
-        $stmt->execute(array(
+        $result = $stmt->execute(array(
             ':date_publi' => $data['date_publi'],
             ':auteur' => $data['auteur'],
-            ':contenu' => $data['contenu'],
-            ':DerniereModification' => $data['DerniereModification']
+            ':contenu' => $data['contenu']
         ));
-        if(!$stmt){
-            echo "Erreur d'execution : " . print_r($stmt->errorInfo(), true);
+
+        $response = array(); // initialisation de la réponse
+
+        if(!$result){
+            http_response_code(500);
+            $response['message'] = "Erreur d'execution : " . print_r($stmt->errorInfo(), true);
         }
-    } 
+        else{
+            $id = $this->db->lastInsertId();
+            http_response_code(200);
+            $response['id'] = $id;
+            $response['status'] = 200;
+            $response['status_message'] = "Votre article a été ajouté avec succès.";
+            $response['data'] = array(
+                "auteur" => $data['auteur'],
+                "contenu" => $data['contenu'],
+                "date_publi" => $data['date_publi']
+            );
+        }
+        echo json_encode($response); // envoi de la réponse au format JSON
+    }
+     
 }
 
 ?>
