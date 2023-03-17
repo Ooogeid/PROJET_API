@@ -19,6 +19,7 @@
 					<button type="submit">Rechercher</button>
 				</form>
 				<div id="get-result">
+					<form action="serveur.php" id="getAll-form" method="POST">
 					<table>
 						<thead>
 						<tr>
@@ -27,11 +28,13 @@
 							<th>Auteur</th>
 							<th>Contenu</th>
 							<th>Dernière modification</th>
+							<th>Actions</th>
 						</tr>
 						</thead>
 						<tbody>
 						</tbody>
 					</table>
+					</form>
 				</div>
 				
 			</section>
@@ -73,6 +76,49 @@
 
 	<script>
 
+		
+
+
+		// Traitement de la méthode GET pour afficher tous les articles
+		$(document).ready(function() {
+		$.ajax({
+			url: "serveur.php",
+			type: "GET",
+			data: {
+				"select_all": true
+			},
+			dataType: "json",
+			success: function(response) {
+				if (response.status == 200) {
+					var articles = response.data;
+					var tableBody = $("#get-result tbody");
+					for (var i = 0; i < articles.length; i++) {
+						var article = articles[i];
+						var row = "<tr>" +
+							"<td>" + article.id_articles + "</td>" +
+							"<td>" + article.date_publi + "</td>" +
+							"<td>" + article.auteur + "</td>" +
+							"<td>" + article.contenu + "</td>" +
+							"<td>" + article.DerniereModification + "</td>" +
+							"<td>" +
+								"<button class='btn-like' data-id='" + article.id_articles + "'>Like</button>" +
+								"<button class='btn-dislike' data-id='" + article.id_articles + "'>Dislike</button>" +
+							"</td>" +
+							"</tr>";
+						tableBody.append(row);
+					}
+				} else {
+					alert("Une erreur s'est produite lors de la récupération des articles.");
+				}
+			},
+			error: function(xhr, status, error) {
+				alert("Une erreur s'est produite lors de la récupération des articles: " + error);
+			}
+		});
+		});
+
+
+		// Traitement de la méthode GET avec id
 		$(document).ready(function() {
 		// Ecouteur d'événement de clic sur le bouton "Rechercher"
 		$('#get-form button[type="submit"]').click(function(event) {
@@ -92,7 +138,7 @@
 					'<td>' + article.date_publi + '</td>' +
 					'<td>' + article.auteur + '</td>' +
 					'<td>' + article.contenu + '</td>' +
-					'<td>' + article.date_modification + '</td>' +
+					'<td>' + article.DerniereModification + '</td>' +
 					'</tr>';
 				tbody.append(row);
 				}
@@ -182,6 +228,57 @@
 			}
 		});
 	});
+
+	// Gestion des likes / dislikes 
+	$(document).ready(function() {
+		// Ajoute un gestionnaire d'événement de clic à tous les boutons like
+		$('.btn-like').click(function() {
+			// Récupère l'ID de l'article liké
+			var id_article = $(this).data('id_articles');
+
+			// Récupère le login de l'utilisateur connecté (stocké dans une variable globale)
+			var login = user_login;
+
+			// Détermine si l'utilisateur a liké ou disliké l'article
+			var has_liked = $(this).hasClass('liked') ? 0 : 1;
+			var has_disliked = $(this).hasClass('disliked') ? 0 : 1;
+
+			// Envoie une requête AJAX pour insérer le like
+			$.ajax({
+			url: 'serveur.php',
+			type: 'POST',
+			data: {
+				id_articles: id_article,
+				login: login,
+				has_liked: has_liked,
+				has_disliked: has_disliked
+			},
+			success: function(response) {
+				// Affiche un message de confirmation
+				alert('Like enregistré avec succès !');
+			},
+			error: function(xhr, status, error) {
+				// Affiche une erreur en cas d'échec
+				alert('Erreur lors de l\'enregistrement du like : ' + error);
+			}
+			});
+
+			// Met à jour l'état du bouton like
+			if (has_liked == 1) {
+				$(this).addClass('liked');
+			} else {
+				$(this).removeClass('liked');
+			}
+
+			// Met à jour l'état du bouton dislike
+			if (has_disliked == 1) {
+				$(this).addClass('disliked');
+			} else {
+				$(this).removeClass('disliked');
+			}
+			
+		});
+		});
 
 	</script>
 

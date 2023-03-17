@@ -22,6 +22,15 @@ class Requete {
         $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return $resultat;
     }
+
+    public function selectAll() {
+        $query = "SELECT * FROM articles";
+        $stmt = $this->db->prepare($query);
+        $stmt->execute();
+        
+        $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $resultat;
+    }
     
     public function update($id_articles, $data) {
         $query = "UPDATE articles SET contenu = :contenu WHERE id_articles = :id_articles";
@@ -54,6 +63,23 @@ class Requete {
         ));
     }
 
+    public function insertLike($id_articles, $login, $has_liked, $has_disliked) {
+        try {
+            $query = "INSERT INTO liked (id_articles, login, has_liked, has_disliked) VALUES (:id_articles, :login, :has_liked, :has_disliked)";
+            $stmt = $this->db->prepare($query);
+            $stmt->bindParam(":id_articles", $id_articles);
+            $stmt->bindParam(":login", $login);
+            $stmt->bindParam(":has_liked", $has_liked);
+            $stmt->bindParam(":has_disliked", $has_disliked);
+            $stmt->execute();
+            return true;
+        } catch (PDOException $e) {
+            echo "Insertion failed: " . $e->getMessage();
+            return false;
+        }
+    }
+    
+
     public function insert($data){
         $query = "INSERT INTO articles(date_publi, auteur, contenu) 
         VALUES (:date_publi, :auteur, :contenu)";
@@ -84,7 +110,9 @@ class Requete {
         }
         echo json_encode($response); // envoi de la réponse au format JSON
     }
-     
+
+
+    
 }
 
 ?>

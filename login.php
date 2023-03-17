@@ -34,5 +34,6 @@ if ($userFound) {
     // Afficher un message d'erreur
     echo "Echec de connexion. Vérifiez vos identifiants.";
 }
+
 ?>
 

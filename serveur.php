@@ -14,8 +14,14 @@ switch ($http_method){
 /// Cas de la méthode GET
 case "GET" :
   $id = "";
-  /// Récupération des critères de recherche envoyés par le Client
-  if (!empty($_GET['id'])){
+  /// Vérification si l'utilisateur veut récupérer tous les articles
+  if (!empty($_GET['select_all'])) {
+    /// Traitement
+    $requete = new Requete();
+    $matchingData = $requete->selectAll();
+    /// Envoi de la réponse au Client
+    deliver_response(200, "Votre message", $matchingData);
+  } elseif (!empty($_GET['id'])) {
     $id = $_GET['id'];
     /// Traitement
     $requete = new Requete(); 
@@ -31,6 +37,7 @@ case "GET" :
     deliver_response(404, "L'identifiant de la ressource doit être spécifié pour la méthode GET", NULL);
   }
   break;
+
 
 
 /// Cas de la méthode POST
