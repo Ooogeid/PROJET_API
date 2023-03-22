@@ -1,39 +1,44 @@
 <?php
-
-include 'connexion.php';
-
-// Récupération du login et du mdp du formulaire
-$username = $_POST["username"];
-$password = $_POST["password"];
-
-$conn = connexion();
-
-// Préparation de la requête SQL pour récupérer l'utilisateur ayant le même login et mot de passe
-$stmt = $conn->prepare('SELECT * FROM users WHERE login = :username AND password = :password');
-$stmt->bindParam(':username', $username);
-$stmt->bindParam(':password', $password);
-$stmt->execute();
-
-// Vérification si l'utilisateur a été trouvé
-$userFound = false;
-
-// Récupération de la première ligne du résultat de la requête
-$row = $stmt->fetch();
-
-if ($row) {
-    // L'utilisateur a été trouvé, connexion réussie
-    $userFound = true;
-}
-
-if ($userFound) {
-    // Permet l'accès à la page d'accueil
-    header('Location: client.php');
-    setcookie("username", $username, time()+3600);
-} else {
-    // Echec de connexion
-    // Afficher un message d'erreur
-    echo "Echec de connexion. Vérifiez vos identifiants.";
-}
-
+        include 'jwt_utils.php';
+            if(isset($_POST["username"]) && isset($_POST["password"])){
+                $username = $_POST["username"];
+                $password = $_POST["password"];
+                $url = "http://localhost/R4.01/PROJET_API/src/ServeurAuthent.php";
+                $data = array('username' => $username, 'password' => $password);
+                $options = array(
+                    'http' => array(
+                    'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
+                    'method'  => 'POST',
+                    'content' => http_build_query($data),
+                    ),
+                );
+                $context = stream_context_create($options);
+                $result = file_get_contents($url, false, $context);
+                $retour = json_decode($result, true);
+                $error = json_last_error_msg();
+                print_r($error);
+                print_r($retour);
+                    
+                if (isset($retour["jwt"])) {
+                    $jwt = $retour["jwt"];
+                    if (is_jwt_valid($jwt)) { // vérifie la validité du JWT
+                        setcookie("jwt", $jwt, time() + 3600, null, null, false, true); // durée de validité : 1 heure (3600 secondes)
+                        header("Location: client.php");
+                        exit();
+                    } else {
+                        echo "<div class='error'>";
+                        echo "<span>jeton invalide</span>";
+                        echo "<i class='fa-solid fa-circle-xmark'></i>";
+                        echo "</div>"; 
+                    }
+                } else {
+                    echo "<div class='error'>";
+                    echo "<span>retour vide</span>";
+                    echo "<i class='fa-solid fa-circle-xmark'></i>";
+                    echo "</div>";
+                }
+                }
 ?>
+        
+
 

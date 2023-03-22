@@ -1,7 +1,9 @@
 header{
+  height: 100%;
+  position: relative;
   color: #000000;
   padding: 1rem;
-  font-size: 1.4rem;
+  font-size: 1rem;
   font-weight: bold;
 }
 
@@ -83,6 +85,8 @@ input[type="email"]:focus,
 input[type="password"]:focus{
   background: rgba(255,255,255,0.1);
   box-shadow: 4px 4px 60px 8px rgba}
+
+
 
 /* Style pour le tableau d'articles */
 #get-result table {

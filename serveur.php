@@ -47,10 +47,21 @@ case "POST" :
   /// Traitement
   $data = json_decode($postedData, true);
   $data['date_publi'] = date('Y-m-d H:i:s');
+  
+  // Insertion de l'article
   $requete = new Requete();
-  $requete->insert($data);
-  /// Envoi de la réponse au Client
-  deliver_response(200, "Votre article a été ajouté avec succès.", $data);
+  if(isset($data['auteur' && 'contenu'])) {
+    $requete->insert($data);
+      /// Envoi de la réponse au Client
+    deliver_response(200, "Votre article a été ajouté avec succès.", $data);
+  }
+
+  // Si l'utilisateur a liké l'article, on ajoute le like dans la table "liked"
+  if (isset($data['has_liked']) && $data['has_liked'] == 1) {
+    $requete->insertLike($data['id_articles'], $data['login'], $data['has_liked'], $data['has_disliked']);
+    deliver_response(200, "Votre like a été pris en compte !", $data);
+  }
+
   break;
 
 

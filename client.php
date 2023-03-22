@@ -1,3 +1,4 @@
+<?php session_start(); ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -75,10 +76,7 @@
 	</main>
 
 	<script>
-
 		
-
-
 		// Traitement de la méthode GET pour afficher tous les articles
 		$(document).ready(function() {
 		$.ajax({
@@ -235,10 +233,10 @@
 		$('.btn-like').click(function() {
 			// Récupère l'ID de l'article liké
 			var id_article = $(this).data('id_articles');
-
+			
 			// Récupère le login de l'utilisateur connecté (stocké dans une variable globale)
-			var login = user_login;
-
+			var login = login;
+			
 			// Détermine si l'utilisateur a liké ou disliké l'article
 			var has_liked = $(this).hasClass('liked') ? 0 : 1;
 			var has_disliked = $(this).hasClass('disliked') ? 0 : 1;
