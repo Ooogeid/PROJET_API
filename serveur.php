@@ -5,114 +5,130 @@ require_once('connexion.php');
 require_once('jwt_utils.php');
 
 /// Paramétrage de l'entête HTTP (pour la réponse au Client)
-header("Content-Type:application/json");
+header('content-Type: application/json');
 
 /// Identification du type de méthode HTTP envoyée par le client
 $http_method = $_SERVER['REQUEST_METHOD'];
 switch ($http_method){
 
-/// Cas de la méthode GET
-case "GET" :
-  $id = "";
-  /// Vérification si l'utilisateur veut récupérer tous les articles
-  if (!empty($_GET['select_all'])) {
+  // Traitement de la méthode GET pour afficher tous les articles
+  case "GET" :
+    $id = "";
+    /// Vérification si l'utilisateur veut récupérer tous les articles
+    if (!empty($_GET['select_all'])) {
+      /// Traitement
+      $requete = new Requete();
+      $matchingData = $requete->selectAll();
+      /// Envoi de la réponse au Client
+      deliver_response(200, "Tous les articles ont été récupérés avec succès.", $matchingData);
+    } elseif (!empty($_GET['id'])) {
+      $id = $_GET['id'];
+      /// Traitement
+      $requete = new Requete(); 
+      $matchingData = $requete->select($id);
+      if (!$matchingData) {
+        deliver_response(404, "Aucune donnée ne correspond à l'identifiant spécifié.", NULL);
+      } else {
+        /// Envoi de la réponse au Client
+        deliver_response(200, "L'article a été récupéré avec succès.", $matchingData);
+      }
+    }
+    else{
+      deliver_response(404, "L'identifiant de la ressource doit être spécifié pour la méthode GET", NULL);
+    }
+    break;
+
+
+
+  case "POST":
+    // Récupération des données envoyées par le Client
+    $postedData = file_get_contents('php://input');
+    // Traitement
+    $data = json_decode($postedData, true);
+
+    // Vérification de la validité du JSON
+    $error = json_last_error();
+    if ($error != "No error") {
+        deliver_response(400, "Erreur de décodage JSON : $error", NULL);
+    }
+
+    if (isset($data['auteur'], $data['contenu'])) {
+        $data['date_publi'] = date('Y-m-d H:i:s');
+        // Si l'utilisateur ajoute un article, on ajoute l'article dans la table "articles"
+        $requete = new Requete();
+        $requete->insert($data);
+        // Envoi de la réponse au Client
+    }
+    elseif(isset($data['id_articles'], $data['login'], $data['has_liked'])) {
+        // Si l'utilisateur like un article, on ajoute l'information dans la table "likes"
+        $requete = new Requete();
+        $requete->insertLike($data['id_articles'], $data['login'], $data['has_liked']);
+        // Envoi de la réponse au Client
+        deliver_response(200, "Votre like a été pris en compte.", array());
+    }
+    elseif(isset($data['id_articles'], $data['login'], $data['has_disliked'])) {
+        // Si l'utilisateur dislike un article, on ajoute l'information dans la table "dislikes"
+        $requete = new Requete();
+        $requete->insertDislike($data['id_articles'], $data['login'], $data['has_disliked']);
+        // Envoi de la réponse au Client
+        deliver_response(200, "Votre dislike a été pris en compte.", array());
+    }
+    else {
+        // Si les paramètres nécessaires ne sont pas présents, on renvoie une erreur
+        deliver_response(400, "Paramètres incomplets.", array());
+    }
+    break;
+
+
+  /// Cas de la méthode PUT
+  case "PUT" :
+    /// Récupération des données envoyées par le Client
+    $postedData = file_get_contents('php://input');
     /// Traitement
+    $data = json_decode($postedData, true);
     $requete = new Requete();
-    $matchingData = $requete->selectAll();
+    if(isset($data['id'])) {
+      $id = $data['id'];
+      $requete->update($id, $data);
+      $matchingData = $requete->select($id);
+      if (!$matchingData) {
+        deliver_response(404, "Aucune donnée ne correspond à l'identifiant spécifié.", NULL);
+      } else {
+        /// Envoi de la réponse au Client
+        $data['DerniereModification'] = date('Y-m-d H:i:s');
+        $requete->updateDateModif($id, $data);
+        deliver_response(200, "Votre phrases modifié : ", $data);
+      }
+      } else {
+        // Envoi de la réponse au Client avec un code 400 si l'élément "id" n'est pas présent
+        deliver_response(400, "L'élément 'id' est manquant dans les données envoyées.");
+      }
+    break;
+
+
+  /// Cas de la méthode DELETE
+  case "DELETE" :
+    $id = "";
+    /// Récupération de l'identifiant de la ressource envoyé par le Client
+    if (!empty($_GET['id'])){
+      /// Traitement
+      $id = $_GET['id'];
+      $requete = new Requete();
+      $matchingData = $requete->delete($id);
+      /// Envoi de la réponse au Client
+      deliver_response(200, "l'id est maintenant supprimé.", NULL);
+    } else {
+      deliver_response(400, "L'identifiant de la ressource doit être spécifié pour la méthode DELETE", NULL);
+    }
+    break;
+
+  default:
     /// Envoi de la réponse au Client
-    deliver_response(200, "Votre message", $matchingData);
-  } elseif (!empty($_GET['id'])) {
-    $id = $_GET['id'];
-    /// Traitement
-    $requete = new Requete(); 
-    $matchingData = $requete->select($id);
-    if (!$matchingData) {
-      deliver_response(404, "Aucune donnée ne correspond à l'identifiant spécifié.", NULL);
-    } else {
-      /// Envoi de la réponse au Client
-      deliver_response(200, "Votre message", $matchingData);
-    }
-  }
-  else{
-    deliver_response(404, "L'identifiant de la ressource doit être spécifié pour la méthode GET", NULL);
-  }
-  break;
+    deliver_response(405, "Méthode non autorisée", NULL);
+    break;
 
-
-
-/// Cas de la méthode POST
-case "POST" :
-  /// Récupération des données envoyées par le Client
-  $postedData = file_get_contents('php://input');
-  /// Traitement
-  $data = json_decode($postedData, true);
-  $data['date_publi'] = date('Y-m-d H:i:s');
-  
-  // Insertion de l'article
-  $requete = new Requete();
-  if(isset($data['auteur' && 'contenu'])) {
-    $requete->insert($data);
-      /// Envoi de la réponse au Client
-    deliver_response(200, "Votre article a été ajouté avec succès.", $data);
   }
 
-  // Si l'utilisateur a liké l'article, on ajoute le like dans la table "liked"
-  if (isset($data['has_liked']) && $data['has_liked'] == 1) {
-    $requete->insertLike($data['id_articles'], $data['login'], $data['has_liked'], $data['has_disliked']);
-    deliver_response(200, "Votre like a été pris en compte !", $data);
-  }
-
-  break;
-
-
-/// Cas de la méthode PUT
-case "PUT" :
-  /// Récupération des données envoyées par le Client
-  $postedData = file_get_contents('php://input');
-  /// Traitement
-  $data = json_decode($postedData, true);
-  $requete = new Requete();
-  if(isset($data['id'])) {
-    $id = $data['id'];
-    $requete->update($id, $data);
-    $matchingData = $requete->select($id);
-    if (!$matchingData) {
-      deliver_response(404, "Aucune donnée ne correspond à l'identifiant spécifié.", NULL);
-    } else {
-      /// Envoi de la réponse au Client
-      $data['DerniereModification'] = date('Y-m-d H:i:s');
-      $requete->updateDateModif($id, $data);
-      deliver_response(200, "Votre phrases modifié : ", $data);
-    }
-    } else {
-      // Envoi de la réponse au Client avec un code 400 si l'élément "id" n'est pas présent
-      deliver_response(400, "L'élément 'id' est manquant dans les données envoyées.");
-    }
-  break;
-
-
-/// Cas de la méthode DELETE
-case "DELETE" :
-  $id = "";
-  /// Récupération de l'identifiant de la ressource envoyé par le Client
-  if (!empty($_GET['id'])){
-    /// Traitement
-    $id = $_GET['id'];
-    $requete = new Requete();
-    $matchingData = $requete->delete($id);
-    /// Envoi de la réponse au Client
-    deliver_response(200, "l'id est maintenant supprimé.", NULL);
-  } else {
-    deliver_response(400, "L'identifiant de la ressource doit être spécifié pour la méthode DELETE", NULL);
-  }
-  break;
-
-default:
-  /// Envoi de la réponse au Client
-  deliver_response(405, "Méthode non autorisée", NULL);
-  break;
-
-}
 /// Fonction d'envoi de la réponse au Client
 function deliver_response($status, $status_message, $data){
   /// Paramétrage de l'entête HTTP

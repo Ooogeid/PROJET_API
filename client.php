@@ -1,16 +1,41 @@
-<?php session_start(); ?>
+<?php
+		// Récupérer le jeton JWT à partir du cookie
+		$jwt = $_COOKIE['jwt'];
+
+		// Clé secrète partagée entre le serveur et le client
+		$secret_key = 'secret';
+
+		// Extraire la partie "claims" du jeton JWT
+		$jwt_parts = explode('.', $jwt);
+		$jwt_claims = $jwt_parts[1];
+	
+		// Décoder la partie "claims" du jeton JWT
+		$decoded_jwt_claims = json_decode(base64_decode($jwt_claims), true);
+		
+		// Récupérer le nom d'utilisateur à partir des informations du jeton
+		$login = $decoded_jwt_claims['username'];
+
+?>
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
 	<meta charset="UTF-8">
 	<title>API pour la gestion des articles</title>
 	<link rel="stylesheet" type="text/css" href="style.css">
+	<link rel="stylesheet" href="fontawesome-free-6.3.0-web/css/all.css">
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
+
+<header>
+	<h1>API pour la gestion des articles, bienvenue <?php echo $login; ?> !</h1>
+</header>
+
+
+
 <body>
-	<header>
-		<h1>API pour la gestion des articles</h1>
-	</header>
+	<div id="background"></div>
+	<canvas id="background-canvas"></canvas>
 	<main>
 			<section id="articles">
 				<h2>Liste des articles</h2>
@@ -21,20 +46,21 @@
 				</form>
 				<div id="get-result">
 					<form action="serveur.php" id="getAll-form" method="POST">
-					<table>
+						<table id="get-result">
 						<thead>
-						<tr>
-							<th>ID</th>
-							<th>Date de création</th>
+							<tr>
+							<th>Date de publication</th>
 							<th>Auteur</th>
 							<th>Contenu</th>
 							<th>Dernière modification</th>
-							<th>Actions</th>
-						</tr>
+							<th></th>
+							<th></th>
+							</tr>
 						</thead>
 						<tbody>
 						</tbody>
-					</table>
+						</table>
+						<button id="refresh-btn" type="button">Rafraîchir la liste</button>
 					</form>
 				</div>
 				
@@ -75,80 +101,83 @@
 		</section>
 	</main>
 
-	<script>
-		
-		// Traitement de la méthode GET pour afficher tous les articles
-		$(document).ready(function() {
+</body>
+
+<footer>
+	<p>© 2023 - API pour la gestion des articles</p>
+</footer>
+
+<script> // Partie javascript pour la gestion des requêtes AJAX
+
+	// Traitement de la méthode GET pour afficher tous les articles
+	$(document).ready(function() {
 		$.ajax({
-			url: "serveur.php",
-			type: "GET",
-			data: {
-				"select_all": true
-			},
-			dataType: "json",
-			success: function(response) {
-				if (response.status == 200) {
-					var articles = response.data;
-					var tableBody = $("#get-result tbody");
-					for (var i = 0; i < articles.length; i++) {
-						var article = articles[i];
-						var row = "<tr>" +
-							"<td>" + article.id_articles + "</td>" +
+			url: 'serveur.php?select_all=true',
+			method: 'GET',
+			success: function(result) {
+				var data = result.data;
+				var tableBody = $('#get-result tbody');
+				tableBody.empty(); // Vider le corps du tableau avant d'ajouter les nouvelles données
+				for (var i = 0; i < data.length; i++) {
+					var article = data[i];
+					var row = 
+						"<tr>" +
 							"<td>" + article.date_publi + "</td>" +
 							"<td>" + article.auteur + "</td>" +
 							"<td>" + article.contenu + "</td>" +
-							"<td>" + article.DerniereModification + "</td>" +
-							"<td>" +
-								"<button class='btn-like' data-id='" + article.id_articles + "'>Like</button>" +
-								"<button class='btn-dislike' data-id='" + article.id_articles + "'>Dislike</button>" +
-							"</td>" +
-							"</tr>";
-						tableBody.append(row);
-					}
-				} else {
-					alert("Une erreur s'est produite lors de la récupération des articles.");
+							"<td>" + (article.DerniereModification ? article.DerniereModification : "") + "</td>" +
+							"<td><a href='#' class='like-article' data-id='" + article.id_articles + "'><i class='far fa-thumbs-up'></i><span>J'aime</span></a></td>" +
+							"<td><a href='#' class='dislike-article' data-id='" + article.id_articles + "'><i class='far fa-thumbs-down'></i> <span>Je n'aime pas</span></a></td>" +
+						"</tr>"
+					tableBody.append(row);
 				}
 			},
 			error: function(xhr, status, error) {
-				alert("Une erreur s'est produite lors de la récupération des articles: " + error);
+				alert("Une erreur s'est produite lors de la récupération des articles.");
 			}
 		});
-		});
+	});
+
+	// Ajout d'un événement de clic sur le bouton de rafraîchissement
+	document.getElementById("refresh-btn").addEventListener("click", function() {
+		// Recharger la page pour afficher les nouveaux articles
+		location.reload();
+	});
 
 
-		// Traitement de la méthode GET avec id
-		$(document).ready(function() {
+	$(document).ready(function() {
 		// Ecouteur d'événement de clic sur le bouton "Rechercher"
 		$('#get-form button[type="submit"]').click(function(event) {
 			event.preventDefault(); // Empêcher le comportement par défaut du formulaire
 			var id = $('input[name="id_articles"]').val();
 			$.ajax({
-			url: 'http://localhost/R4.01/PROJET_API/src/serveur.php?id=' + id,
-			method: 'GET',
-			success: function(result) {
-				var data = result.data;
-				var tbody = $('#get-result tbody');
-				tbody.empty(); // Vider le corps du tableau avant d'ajouter les nouvelles données
-				for (var i = 0; i < data.length; i++) {
-				var article = data[i];
-				var row = '<tr>' +
-					'<td>' + article.id_articles + '</td>' +
-					'<td>' + article.date_publi + '</td>' +
-					'<td>' + article.auteur + '</td>' +
-					'<td>' + article.contenu + '</td>' +
-					'<td>' + article.DerniereModification + '</td>' +
-					'</tr>';
-				tbody.append(row);
+				url: 'http://localhost/R4.01/PROJET_API/src/serveur.php?id=' + id,
+				method: 'GET',
+				success: function(result) {
+					var data = result.data;
+					var tableBody = $('#get-result tbody');
+					tableBody.empty(); // Vider le corps du tableau avant d'ajouter les nouvelles données
+					for (var i = 0; i < data.length; i++) {
+						var article = data[i];
+						var row = 
+							"<tr>" +
+								"<td>" + article.date_publi + "</td>" +
+								"<td>" + article.auteur + "</td>" +
+								"<td>" + article.contenu + "</td>" +
+								"<td>" + (article.DerniereModification ? article.DerniereModification : "") + "</td>" +
+								"<td><a href='#' class='like-article' data-id='" + article.id_articles + "'><i class='far fa-thumbs-up'></i><span>J'aime</span></a></td>" +
+								"<td><a href='#' class='dislike-article' data-id='" + article.id_articles + "'><i class='far fa-thumbs-down'></i> <span>Je n'aime pas</span></a></td>" +
+							"</tr>"
+						tableBody.append(row);
+					}
+				},
+				error: function(xhr, textStatus, errorThrown) {
+					$('#get-result tbody').empty(); // Vider le corps du tableau en cas d'erreur
+					$('#get-result').html('<p>Erreur ' + xhr.status + ' : ' + errorThrown + '</p>');
 				}
-			},
-			error: function(xhr, textStatus, errorThrown) {
-				$('#get-result tbody').empty(); // Vider le corps du tableau en cas d'erreur
-				$('#get-result').html('<p>Erreur ' + xhr.status + ' : ' + errorThrown + '</p>');
-			}
 			});
 		});
-		});
-
+	});
 
 		// Traitement du formulaire de la méthode POST
 		$('#post-form').submit(function(event) {
@@ -169,6 +198,7 @@
 			});
 		});
 
+		// Traitement du formulaire de la méthode PUT
 		$('#put-form').submit(function(event) {
 			event.preventDefault();
 			id = $('#put-form #id-modification').val();
@@ -227,58 +257,127 @@
 		});
 	});
 
-	// Gestion des likes / dislikes 
-	$(document).ready(function() {
-		// Ajoute un gestionnaire d'événement de clic à tous les boutons like
-		$('.btn-like').click(function() {
-			// Récupère l'ID de l'article liké
-			var id_article = $(this).data('id_articles');
-			
-			// Récupère le login de l'utilisateur connecté (stocké dans une variable globale)
-			var login = login;
-			
-			// Détermine si l'utilisateur a liké ou disliké l'article
-			var has_liked = $(this).hasClass('liked') ? 0 : 1;
-			var has_disliked = $(this).hasClass('disliked') ? 0 : 1;
-
-			// Envoie une requête AJAX pour insérer le like
+		// gestion des like et dislike
+		$(document).on('click', '.like-article', function(e) {
+			e.preventDefault();
+			var id_articles = $(this).data('id');
 			$.ajax({
-			url: 'serveur.php',
-			type: 'POST',
-			data: {
-				id_articles: id_article,
-				login: login,
-				has_liked: has_liked,
-				has_disliked: has_disliked
-			},
-			success: function(response) {
-				// Affiche un message de confirmation
-				alert('Like enregistré avec succès !');
-			},
-			error: function(xhr, status, error) {
-				// Affiche une erreur en cas d'échec
-				alert('Erreur lors de l\'enregistrement du like : ' + error);
-			}
+				url: 'serveur.php',
+				method: 'POST',
+				contentType: 'application/json',
+				data: JSON.stringify({
+					id_articles: id_articles,
+					login: "<?php echo $login; ?>",
+					has_liked: 1,
+				}),
+				success: function(result) {
+					alert("Le like a été enregistré avec succès.");
+				},
+				error: function(xhr, status, error) {
+					alert("Vous avez déja liké cette article .");
+				}
 			});
+		});
 
-			// Met à jour l'état du bouton like
-			if (has_liked == 1) {
-				$(this).addClass('liked');
-			} else {
-				$(this).removeClass('liked');
+		$(document).on('click', '.dislike-article', function(e) {
+		e.preventDefault();
+			var id_articles = $(this).data('id');
+			$.ajax({
+				url: 'serveur.php',
+				method: 'POST',
+				contentType: 'application/json',
+				data: JSON.stringify({
+					id_articles: id_articles,
+					login: "<?php echo $login; ?>",
+					has_disliked: 1,
+				}),
+				success: function(result) {
+					alert("Le dislike a été enregistré avec succès.");
+				},
+				error: function(xhr, status, error) {
+					alert("Une erreur s'est produite lors de l'envoi du dislike.");
+				}
+			});
+		});
+
+		// background interactif
+
+		// couleur qui change de manière aléatoire
+		window.onload = function() {
+			var background = document.getElementById('background');
+			var gradients = [
+				'gradient-1',
+				'gradient-2',
+				'gradient-3'
+			];
+				
+			function changeBackground() {
+				var index = Math.floor(Math.random() * gradients.length);
+				var gradient = gradients[index];
+				background.className = 'background ' + gradient;
+			}
+				
+			setInterval(changeBackground, 5000);
+
+		// Feuille interactive lors du survol
+
+			// Récupérer le canvas et son contexte
+			var canvas = document.getElementById('background-canvas');
+			var context = canvas.getContext('2d');
+
+			// Configuration des feuilles
+			var leafImage = new Image();
+			leafImage.src = 'img/cloud.png';
+			var leafs = [];
+			var numLeafs = 20;
+			var windSpeed = 2;
+			var maxLeafSize = 60;
+			var minLeafSize = 20;
+
+			// Dessiner des feuilles aléatoires
+			function drawLeaves() {
+				for (var i = 0; i < numLeafs; i++) {
+					var x = Math.random() * canvas.width;
+					var y = Math.random() * canvas.height;
+					var size = Math.random() * (maxLeafSize - minLeafSize) + minLeafSize;
+					var speed = Math.random() * windSpeed + 1;
+					leafs.push({ x: x, y: y, size: size, speed: speed });
+				}
 			}
 
-			// Met à jour l'état du bouton dislike
-			if (has_disliked == 1) {
-				$(this).addClass('disliked');
-			} else {
-				$(this).removeClass('disliked');
+			// Dessiner une feuille sur le canvas
+			function drawLeaf(x, y, size) {
+				context.drawImage(leafImage, x, y, size, size);
 			}
-			
-		});
-		});
+
+			// Animer les feuilles
+			function animateLeaves() {
+				
+				// Effacer le canvas
+				context.clearRect(0, 0, canvas.width, canvas.height);
+				
+				// Dessiner les feuilles à leur nouvelle position
+				for (var i = 0; i < leafs.length; i++) {
+					var leaf = leafs[i];
+					leaf.x -= leaf.speed;
+					if (leaf.x < -leaf.size) {
+					leaf.x = canvas.width + leaf.size;
+					}
+					drawLeaf(leaf.x, leaf.y, leaf.size);
+				}
+				
+				// Répéter l'animation
+				requestAnimationFrame(animateLeaves);
+			}
+
+			// Charger l'image et dessiner les feuilles
+			leafImage.onload = function() {
+				drawLeaves();
+				animateLeaves();
+			};
+
+		}
 
 	</script>
 
-</body>
 </html>

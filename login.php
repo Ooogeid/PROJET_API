@@ -15,9 +15,6 @@
                 $context = stream_context_create($options);
                 $result = file_get_contents($url, false, $context);
                 $retour = json_decode($result, true);
-                $error = json_last_error_msg();
-                print_r($error);
-                print_r($retour);
                     
                 if (isset($retour["jwt"])) {
                     $jwt = $retour["jwt"];
@@ -33,11 +30,13 @@
                     }
                 } else {
                     echo "<div class='error'>";
-                    echo "<span>retour vide</span>";
+                    echo "<span>Identifients invalides !</span>";
+                    echo "<br></br>";
+                    echo "<a href='authentification.html'>Retour</a>";
                     echo "<i class='fa-solid fa-circle-xmark'></i>";
                     echo "</div>";
                 }
-                }
+            }
 ?>
         
 

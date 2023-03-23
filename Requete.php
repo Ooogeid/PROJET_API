@@ -63,13 +63,27 @@ class Requete {
         ));
     }
 
-    public function insertLike($id_articles, $login, $has_liked, $has_disliked) {
+    public function insertLike($id_articles, $login, $has_liked) {
         try {
-            $query = "INSERT INTO liked (id_articles, login, has_liked, has_disliked) VALUES (:id_articles, :login, :has_liked, :has_disliked)";
+            $query = "INSERT INTO liked (id_articles, login, has_liked) VALUES (:id_articles, :login, :has_liked)";
             $stmt = $this->db->prepare($query);
             $stmt->bindParam(":id_articles", $id_articles);
             $stmt->bindParam(":login", $login);
             $stmt->bindParam(":has_liked", $has_liked);
+            $stmt->execute();
+            return true;
+        } catch (PDOException $e) {
+            echo "Insertion failed: " . $e->getMessage();
+            return false;
+        }
+    }
+
+    public function insertDislike($id_articles, $login, $has_disliked) {
+        try {
+            $query = "INSERT INTO disliked (id_articles, login, has_disliked) VALUES (:id_articles, :login, :has_disliked)";
+            $stmt = $this->db->prepare($query);
+            $stmt->bindParam(":id_articles", $id_articles);
+            $stmt->bindParam(":login", $login);
             $stmt->bindParam(":has_disliked", $has_disliked);
             $stmt->execute();
             return true;
