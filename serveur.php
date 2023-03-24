@@ -57,7 +57,7 @@ switch ($http_method){
         // Si l'utilisateur ajoute un article, on ajoute l'article dans la table "articles"
         $requete = new Requete();
         $requete->insert($data);
-        // Envoi de la réponse au Client
+        // Envoi de la réponse au Client  
     }
     elseif(isset($data['id_articles'], $data['login'], $data['has_liked'])) {
         // Si l'utilisateur like un article, on ajoute l'information dans la table "likes"

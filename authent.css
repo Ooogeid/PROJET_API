@@ -44,6 +44,7 @@ body {
   }
   
   input[type="submit"] {
+    font-size: 1rem;
     background-color: #0099cc;
     color: #fff;
     border: none;
@@ -57,6 +58,7 @@ body {
     color: #0099cc;
     text-decoration: none;
     margin-top: 1rem;
+    padding-left: 2rem;
   }
   
   a:hover {

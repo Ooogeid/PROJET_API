@@ -25,6 +25,20 @@ header h1 {
   font-size: 1.2rem;
 }
 
+.footer{
+  width: 100%;
+  padding: 0.1rem;
+  font-size: 0.9rem;
+  font-style: italic;
+  z-index: 1;
+  display: inline-block;
+  flex-direction: row;
+}
+
+.footer p{
+  color: #006699;
+  text-align: center;
+}
 
 /* Style pour le contenu principal */
 body {
@@ -135,6 +149,16 @@ input[type="submit"]:hover {
   background-color: #006699;
 }
 
+/* Style pour les étiquettes */
+label {
+  display: inline-block;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+  font-size: 1rem;
+  color: #333;
+  text-transform: uppercase;
+}
+
 /* Style pour les listes */
 ul {
   list-style: none;
@@ -144,6 +168,11 @@ ul {
 
 li {
   margin-bottom: 1rem;
+}
+
+/* Style pour les tableaux */
+#get-result th, #get-result td {
+  padding: 1rem;
 }
 
 /* Style pour les images */

@@ -1,19 +1,24 @@
 <?php
+	// Vérifier si l'utilisateur a accédé au site via le lien "Se connecter sans compte"
+	if (isset($_GET['from']) && $_GET['from'] === 'guest') {
+		$login = '';
+	} else {
 		// Récupérer le jeton JWT à partir du cookie
 		$jwt = $_COOKIE['jwt'];
-
+	
 		// Clé secrète partagée entre le serveur et le client
 		$secret_key = 'secret';
-
+	
 		// Extraire la partie "claims" du jeton JWT
 		$jwt_parts = explode('.', $jwt);
 		$jwt_claims = $jwt_parts[1];
-	
+		
 		// Décoder la partie "claims" du jeton JWT
 		$decoded_jwt_claims = json_decode(base64_decode($jwt_claims), true);
 		
 		// Récupérer le nom d'utilisateur à partir des informations du jeton
 		$login = $decoded_jwt_claims['username'];
+	}
 
 ?>
 
@@ -31,22 +36,20 @@
 	<h1>API pour la gestion des articles, bienvenue <?php echo $login; ?> !</h1>
 </header>
 
-
-
 <body>
 	<div id="background"></div>
 	<canvas id="background-canvas"></canvas>
 	<main>
-			<section id="articles">
-				<h2>Liste des articles</h2>
-				<form action="serveur.php" id="get-form" method="POST">
-					<label for="id_articles">ID :</label>
-					<input type="text" id="id_articles" name="id_articles">
-					<button type="submit">Rechercher</button>
-				</form>
-				<div id="get-result">
-					<form action="serveur.php" id="getAll-form" method="POST">
-						<table id="get-result">
+		<section id="articles">
+			<h2>Liste des articles</h2>
+			<form action="serveur.php" id="get-form" method="POST">
+				<label for="id_articles">ID :</label>
+				<input type="text" id="id_articles" name="id_articles">
+				<button type="submit">Rechercher</button>
+			</form>
+			<div id="get-result">
+				<form action="serveur.php" id="getAll-form" method="POST">
+					<table id="get-result">
 						<thead>
 							<tr>
 							<th>Date de publication</th>
@@ -59,52 +62,66 @@
 						</thead>
 						<tbody>
 						</tbody>
-						</table>
-						<button id="refresh-btn" type="button">Rafraîchir la liste</button>
-					</form>
-				</div>
-				
+					</table>
+					<button id="refresh-btn" type="button">Rafraîchir la liste</button>
+				</form>
+			</div>
+			
+		</section>
+
+		<?php if ($login === '') { ?>
+			<section id="connexion">
+				<h2>Connectez-vous pour avoir tout les accès.</h2>
+				<form action="login.php" method="POST">
+					<label for="username">Nom d'utilisateur:</label>
+					<input type="text" id="username" name="username"><br><br>
+					<label for="password">Mot de passe:</label>
+					<input type="password" id="password" name="password"><br><br>
+					<input type="submit" value="Se connecter">
+				</form>
+			</section>
+		<?php } else { ?>
+			<section id="nouvel-article">
+				<h2>Ajouter un nouvel article</h2>
+				<form action="serveur.php" id="post-form" method="POST">
+					<label for="auteur">Auteur :</label>
+					<input type="text" id="auteur" name="auteur">
+					<label for="contenu">Contenu :</label>
+					<textarea id="contenu" name="contenu"></textarea>
+					<button type="submit">Ajouter</button>
+				</form>
+				<div id="post-result"></div>
 			</section>
 
-		<section id="nouvel-article">
-			<h2>Ajouter un nouvel article</h2>
-			<form action="serveur.php" id="post-form" method="POST">
-				<label for="auteur">Auteur :</label>
-				<input type="text" id="auteur" name="auteur">
-				<label for="contenu">Contenu :</label>
-				<textarea id="contenu" name="contenu"></textarea>
-				<button type="submit">Ajouter</button>
-			</form>
-			<div id="post-result"></div>
-		</section>
+			<section id="modifier-article">
+				<h2>Modifier un article</h2>
+				<form action="serveur.php" id ="put-form" method="POST">
+					<label for="id-modification">Identifiant de l'article :</label>
+					<input type="number" id="id-modification" name="id-modification">
+					<label for="nouveau-contenu">Nouveau contenu :</label>
+					<textarea id="nouveau-contenu" name="nouveau-contenu"></textarea>
+					<button type="submit">Modifier</button>
+				</form>
+				<div id="put-result"><p></p></div>
+			</section>
 
-		<section id="modifier-article">
-			<h2>Modifier un article</h2>
-			<form action="serveur.php" id ="put-form" method="POST">
-				<label for="id-modification">Identifiant de l'article :</label>
-				<input type="number" id="id-modification" name="id-modification">
-				<label for="nouveau-contenu">Nouveau contenu :</label>
-				<textarea id="nouveau-contenu" name="nouveau-contenu"></textarea>
-				<button type="submit">Modifier</button>
-			</form>
-			<div id="put-result"><p></p></div>
-		</section>
-
-		<section id="supprimer-article">
-			<h2>Supprimer un article</h2>
-			<form action="serveur.php" id ="delete-form" method="POST">
-				<label for="id-suppression">Identifiant de l'article :</label>
-				<input type="number" id="id-suppression" name="id-suppression">
-				<button type="submit">Supprimer</button>
-			</form>
-			<div id="delete-result"><p></p></div>
-		</section>
+			<section id="supprimer-article">
+				<h2>Supprimer un article</h2>
+				<form action="serveur.php" id ="delete-form" method="POST">
+					<label for="id-suppression">Identifiant de l'article :</label>
+					<input type="number" id="id-suppression" name="id-suppression">
+					<button type="submit">Supprimer</button>
+					<div id="delete-result"><p></p></div>
+				</form>
+			</section>
+		<?php } ?>
 	</main>
 
 </body>
 
-<footer>
+<footer class="footer">
 	<p>© 2023 - API pour la gestion des articles</p>
+	<p>Site réalisé par : Diego Mas-Bouvry  -  Baran Kaya</p>
 </footer>
 
 <script> // Partie javascript pour la gestion des requêtes AJAX
@@ -330,8 +347,8 @@
 			leafImage.src = 'img/cloud.png';
 			var leafs = [];
 			var numLeafs = 20;
-			var windSpeed = 2;
-			var maxLeafSize = 60;
+			var windSpeed = 0.7;
+			var maxLeafSize = 40;
 			var minLeafSize = 20;
 
 			// Dessiner des feuilles aléatoires
@@ -340,7 +357,7 @@
 					var x = Math.random() * canvas.width;
 					var y = Math.random() * canvas.height;
 					var size = Math.random() * (maxLeafSize - minLeafSize) + minLeafSize;
-					var speed = Math.random() * windSpeed + 1;
+					var speed = Math.random() * windSpeed;
 					leafs.push({ x: x, y: y, size: size, speed: speed });
 				}
 			}
