@@ -9,37 +9,62 @@ header('content-Type: application/json');
 
 /// Identification du type de méthode HTTP envoyée par le client
 $http_method = $_SERVER['REQUEST_METHOD'];
+
 switch ($http_method){
 
-  // Traitement de la méthode GET pour afficher tous les articles
   case "GET" :
+    
     $id = "";
     /// Vérification si l'utilisateur veut récupérer tous les articles
     if (!empty($_GET['select_all'])) {
       /// Traitement
       $requete = new Requete();
       $matchingData = $requete->selectAll();
+
+      // Récupération du nombre de likes et dislikes pour chaque article et ajout à la réponse JSON
+      foreach ($matchingData as &$article) {
+        $nb_likes = $requete->nbLike($article['id_articles']);
+        $article['nb_likes'] = $nb_likes;
+        $nb_dislikes = $requete->nbDislike($article['id_articles']);
+        $article['nb_dislikes'] = $nb_dislikes;
+      }
+      
       /// Envoi de la réponse au Client
       deliver_response(200, "Tous les articles ont été récupérés avec succès.", $matchingData);
+
+    // Sinon si l'utilisateur veut récupérer un article en particulier
     } elseif (!empty($_GET['id'])) {
-      $id = $_GET['id'];
-      /// Traitement
-      $requete = new Requete(); 
-      $matchingData = $requete->select($id);
-      if (!$matchingData) {
-        deliver_response(404, "Aucune donnée ne correspond à l'identifiant spécifié.", NULL);
-      } else {
-        /// Envoi de la réponse au Client
-        deliver_response(200, "L'article a été récupéré avec succès.", $matchingData);
-      }
+        $id = $_GET['id'];
+        /// Traitement
+        $requete = new Requete(); 
+        $matchingData = $requete->select($id);
+        // Récupération du nombre de likes pour l'article et ajout à la réponse JSON
+        $nb_likes = $requete->nbLike($id);
+        $matchingData['nb_likes'] = $nb_likes;
+        if (!$matchingData) {
+          deliver_response(404, "Aucune donnée ne correspond à l'identifiant spécifié.", NULL);
+        } else {
+          /// Envoi de la réponse au Client
+          deliver_response(200, "L'article a été récupéré avec succès.", $matchingData);
+        }
     }
+    // Sinon si l'utilisateur veut choisir le contenu à modifier dans le menu déroulant
+    elseif(!empty($_GET['select_content'])) {
+      /// Traitement
+      $requete = new Requete();
+      $matchingData = $requete->select_content();
+
+      /// Envoi de la réponse au Client
+      deliver_response(200, "Contenu récupérés avec succes.", $matchingData);
+    }
+
+    // Sinon erreur
     else{
       deliver_response(404, "L'identifiant de la ressource doit être spécifié pour la méthode GET", NULL);
     }
     break;
 
-
-
+  /// Cas de la méthode POST
   case "POST":
     // Récupération des données envoyées par le Client
     $postedData = file_get_contents('php://input');
@@ -51,14 +76,14 @@ switch ($http_method){
     if ($error != "No error") {
         deliver_response(400, "Erreur de décodage JSON : $error", NULL);
     }
-
+    // Ajout d'un article
     if (isset($data['auteur'], $data['contenu'])) {
         $data['date_publi'] = date('Y-m-d H:i:s');
         // Si l'utilisateur ajoute un article, on ajoute l'article dans la table "articles"
         $requete = new Requete();
         $requete->insert($data);
-        // Envoi de la réponse au Client  
     }
+    // Sinon si l'utilisateur like
     elseif(isset($data['id_articles'], $data['login'], $data['has_liked'])) {
         // Si l'utilisateur like un article, on ajoute l'information dans la table "likes"
         $requete = new Requete();
@@ -66,6 +91,7 @@ switch ($http_method){
         // Envoi de la réponse au Client
         deliver_response(200, "Votre like a été pris en compte.", array());
     }
+    // Sinon si l'utilisateur dislike
     elseif(isset($data['id_articles'], $data['login'], $data['has_disliked'])) {
         // Si l'utilisateur dislike un article, on ajoute l'information dans la table "dislikes"
         $requete = new Requete();
@@ -73,6 +99,7 @@ switch ($http_method){
         // Envoi de la réponse au Client
         deliver_response(200, "Votre dislike a été pris en compte.", array());
     }
+    // Sinon
     else {
         // Si les paramètres nécessaires ne sont pas présents, on renvoie une erreur
         deliver_response(400, "Paramètres incomplets.", array());
@@ -99,10 +126,10 @@ switch ($http_method){
         $requete->updateDateModif($id, $data);
         deliver_response(200, "Votre phrases modifié : ", $data);
       }
-      } else {
+    } else {
         // Envoi de la réponse au Client avec un code 400 si l'élément "id" n'est pas présent
         deliver_response(400, "L'élément 'id' est manquant dans les données envoyées.");
-      }
+    }
     break;
 
 

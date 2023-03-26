@@ -31,14 +31,25 @@ class Requete {
         $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return $resultat;
     }
+
+    public function select_content() {
+        $query = "SELECT id_articles, contenu, auteur FROM articles";
+        $stmt = $this->db->prepare($query);
+        $stmt->execute();
+        
+        $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $resultat;
+    }
     
     public function update($id_articles, $data) {
+        // Mettre à jour l'article dans la base de données
         $query = "UPDATE articles SET contenu = :contenu WHERE id_articles = :id_articles";
         $stmt = $this->db->prepare($query);
         $result = $stmt->execute(array(
             'id_articles' => $id_articles,
             'contenu' => $data['contenu']
         ));
+
         return $result;
     }
 
@@ -62,7 +73,7 @@ class Requete {
             ':id_articles' => $id_articles
         ));
     }
-
+    
     public function insertLike($id_articles, $login, $has_liked) {
         try {
             $query = "INSERT INTO liked (id_articles, login, has_liked) VALUES (:id_articles, :login, :has_liked)";
@@ -125,7 +136,21 @@ class Requete {
         echo json_encode($response); // envoi de la réponse au format JSON
     }
 
+    public function nbLike($id_articles){
+        $query = "SELECT COUNT(*) AS count FROM liked where has_liked = 1 and id_articles = $id_articles";
+        $stmt = $this->db->prepare($query);
+        $stmt->execute();
+        $resultat = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $resultat;
+    }
 
+    public function nbDislike($id_articles){
+        $query = "SELECT COUNT(*) AS count FROM disliked where has_disliked = 1 and id_articles = $id_articles";
+        $stmt = $this->db->prepare($query);
+        $stmt->execute();
+        $resultat = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $resultat;
+    }
     
 }
 
