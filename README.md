@@ -18,3 +18,19 @@
 -- "Requete.php" est un fichier contenant une classe avec des fonctions gérant chaque requête sur la base de données.
 
 -- style.css est le ficher css pour le client et authent est celui pour la page d'authentification.
+
+# Il y a trois comptes :
+    - id : diego
+    - password : diego972
+    - role : publisher
+
+    - id : baran
+    - mdp : baran31
+    - role : moderator
+
+    - id : brice
+    - mdp : PassProf
+    - role : publisher
+
+-- Il y a également la possbilité de se connecter sans compte, les fonctions sont donc limités on peut 
+-- seulement acceder au articles.
