@@ -49,7 +49,7 @@ class Requete {
             'id_articles' => $id_articles,
             'contenu' => $data['contenu']
         ));
-
+        
         return $result;
     }
 
