@@ -147,7 +147,7 @@ switch ($http_method){
     } else {
       deliver_response(400, "L'identifiant de la ressource doit être spécifié pour la méthode DELETE", NULL);
     }
-    break;
+    break;  
 
   default:
     /// Envoi de la réponse au Client
