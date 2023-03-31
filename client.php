@@ -182,29 +182,29 @@
 			event.preventDefault(); // Empêcher le comportement par défaut du formulaire
 			var id = $('input[name="id_articles"]').val();
 			$.ajax({
-			url: 'http://localhost/R4.01/PROJET_API/src/serveur.php?id=' + id,
-			method: 'GET',
-			success: function(result) {
-				var data = result.data;
-				var article = data['0'];
-				var nb_likes = article.nb_likes ? ("(" + article.nb_likes.count + ")") : "";
-				var tableBody = $('#get-result tbody');
-				tableBody.empty(); // Vider le corps du tableau avant d'ajouter les nouvelles données
-				var row = 
-				"<tr>" +
-					"<td>" + article.date_publi + "</td>" +
-					"<td>" + article.auteur + "</td>" +
-					"<td>" + article.contenu + "</td>" +
-					"<td>" + (article.DerniereModification ? article.DerniereModification : "") + "</td>" +
-					"<td><a href='#' class='like-article' data-id='" + article.id_articles + "'><i class='far fa-thumbs-up'></i><span>J'aime</span></a></td>" +
-					"<td><a href='#' class='dislike-article' data-id='" + article.id_articles + "'><i class='far fa-thumbs-down'></i> <span>Je n'aime pas</span></a></td>" +
-				"</tr>"
-				tableBody.append(row);
-			},
-			error: function(xhr, textStatus, errorThrown) {
-				$('#get-result tbody').empty(); // Vider le corps du tableau en cas d'erreur
-				$('#get-result').html('<p>Erreur ' + xhr.status + ' : ' + errorThrown + '</p>');
-			}
+				url: 'http://localhost/R4.01/PROJET_API/src/serveur.php?id=' + id,
+				method: 'GET',
+				success: function(result) {
+					var data = result.data;
+					var article = data['0'];
+					var nb_likes = article.nb_likes ? ("(" + article.nb_likes.count + ")") : "";
+					var tableBody = $('#get-result tbody');
+					tableBody.empty(); // Vider le corps du tableau avant d'ajouter les nouvelles données
+					var row = 
+					"<tr>" +
+						"<td>" + article.date_publi + "</td>" +
+						"<td>" + article.auteur + "</td>" +
+						"<td>" + article.contenu + "</td>" +
+						"<td>" + (article.DerniereModification ? article.DerniereModification : "") + "</td>" +
+						"<td><a href='#' class='like-article' data-id='" + article.id_articles + "'><i class='far fa-thumbs-up'></i><span>J'aime</span></a></td>" +
+						"<td><a href='#' class='dislike-article' data-id='" + article.id_articles + "'><i class='far fa-thumbs-down'></i> <span>Je n'aime pas</span></a></td>" +
+					"</tr>"
+					tableBody.append(row);
+				},
+				error: function(xhr, textStatus, errorThrown) {
+					$('#get-result tbody').empty(); // Vider le corps du tableau en cas d'erreur
+					$('#get-result').html('<p>Erreur ' + xhr.status + ' : ' + errorThrown + '</p>');
+				}
 			});
 		});
 	});
