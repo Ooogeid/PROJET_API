@@ -20,6 +20,7 @@
 -- style.css est le ficher css pour le client et authent est celui pour la page d'authentification.
 
 # Il y a trois comptes :
+
     - id : diego
     - password : diego972
     - role : publisher
@@ -34,3 +35,6 @@
 
 -- Il y a également la possbilité de se connecter sans compte, les fonctions sont donc limités on peut 
 -- seulement acceder au articles.
+
+Il y a également deux dossier, le premier "fontawesome-free-6.3.0-web" qui est une librairie css pour les icones des boutons likes / dislikes.
+Le deuxième "img" contient juste l'image en png du nuage.
